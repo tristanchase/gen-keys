@@ -5,8 +5,8 @@
 
 #<usage>
 #//Usage: gen-keys [ {-d|--debug} ] [ {-h|--help} ]
-#//Description: Generates SSH keys for use on local and remote hosts
-#//Examples: gen-keys foo; gen-keys --debug bar
+#//Description: Generates SSH keys for pairing local and remote machines
+#//Examples: gen-keys; gen-keys --debug
 #//Options:
 #//	-d --debug	Enable debug mode
 #//	-h --help	Display this help message
