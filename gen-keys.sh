@@ -20,6 +20,7 @@
 #<depends>
 # Depends on:
 #  ssh-keygen
+#  keychain
 #</depends>
 
 #-----------------------------------
