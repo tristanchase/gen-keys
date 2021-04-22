@@ -5,7 +5,7 @@
 
 #<usage>
 #//Usage: gen-keys [ {-d|--debug} ] [ {-h|--help} ]
-#//Description: Generates SSH keys for pairing local and remote machines
+#//Description: Generates SSH keys for pairing local and remote hosts
 #//Examples: gen-keys; gen-keys --debug
 #//Options:
 #//	-d --debug	Enable debug mode
@@ -30,14 +30,6 @@
 # TODO
 
 # DONE
-# + Insert script
-# + Clean up stray ;'s
-# + Modify command substitution to "$(this_style)"
-# + Rename function_name() to function __function_name__ /\w+\(\)
-# + Rename $variables to "${_variables}" /\$\w+/s+1 @v vEl,{n
-# + Check that _variable="variable definition" (make sure it's in quotes)
-# + Update usage, description, and options section
-# + Update dependencies section
 
 #</todo>
 
@@ -64,26 +56,32 @@ function __main_script__ {
 	# Work in the right place
 	cd ~/.ssh
 
-	# Get the name of the remote machine
-	printf "Enter the name of the remote machine (blank quits): "
-	read _remote_machine
-	if [[ -z "${_remote_machine}" ]]; then
+	# Get the name of the remote host
+	printf "Enter the name of the remote host (blank quits): "
+	read _remote_host
+	if [[ -z "${_remote_host}" ]]; then
 		exit 2
+	else
+		_keyname="${_remote_host}"_key
 	fi
 
 	# Generate the keys
-	ssh-keygen -t ed25519 -f "${_remote_machine}"
+	ssh-keygen -t ed25519 -f "${_keyname}"
 
-	# Append the public key to the remote machine
-	printf "Enter your username on "${_remote_machine}" (blank quits): "
-	read _user_name
-	if [[ -z "${_user_name}" ]]; then
-		exit 2
-	fi
-	cat ~/.ssh/"${_remote_machine}".pub | ssh "${_user_name}"@"${_remote_machine}" 'cat >> ~/.ssh/authorized_keys2'
+	# Create a known_hosts file for each key
+	touch known_hosts_"${_keyname}"
+
+	# TODO This section will be fixed in Task: Handle public key transfer #6
+	# Append the public key to the remote host
+	#printf "Enter your username on "${_remote_host}" (blank quits): "
+	#read _user_name
+	#if [[ -z "${_user_name}" ]]; then
+		#exit 2
+	#fi
+	#cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'
 
 	# Add the key to ssh-agent
-	eval $(keychain --eval "${_remote_machine}")
+	eval $(keychain --eval "${_keyname}")
 
 } #end __main_script__
 #</main>
