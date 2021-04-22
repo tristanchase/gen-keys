@@ -65,16 +65,38 @@ function __main_script__ {
 		_keyname="${_remote_host}"_key
 	fi
 
+	# Get user name
+	printf "Enter username on "${_remote_host}" (enter \"git\" on github or gitlab): "
+	read _user_name
+
 	# Generate the keys
 	ssh-keygen -t ed25519 -f "${_keyname}"
 
 	# Create a known_hosts file for each key
-	touch known_hosts_"${_keyname}"
+	touch known_hosts_"${_remote_host}"
+
+	# Create/update config file
+	touch config
+
+	# Get Label
+	printf "Enter a Label for this config entry (Host without .com): "
+	read _label
+
+	cat >> config << EOF
+# ${_label}
+Host ${_remote_host}
+ Hostname ${_remote_host}
+ User ${_user_name}
+ AddKeysToAgent yes
+ UseKeychain yes
+ IdentityFile ~/.ssh/${_keyname}
+ UserKnownHostsFile ~/.ssh/known_hosts_${_remote_host}
+ IdentitiesOnly yes
+
+EOF
 
 	# TODO This section will be fixed in Task: Handle public key transfer #6
 	# Append the public key to the remote host
-	#printf "Enter your username on "${_remote_host}" (blank quits): "
-	#read _user_name
 	#if [[ -z "${_user_name}" ]]; then
 		#exit 2
 	#fi
