@@ -7,9 +7,9 @@
 - made this
 - did that
 
-## How does the solutios the problem
+## How does the solution address the problem
 
-This PR will...
+This PR will 
 
 ## Linked issues
 
