@@ -29,14 +29,16 @@
 
 #<todo>
 # TODO
-# * Give encoding options
+# > Give encoding options
 #  + Create option -t | --type
 #    + Update usage section (`u)
 #    + Update options section (`o)
 #  + Add if statement to main script
 #  > Create function
 #    + Choices: dsa | ecdsa | ed25519 (default)| rsa
-#    * Bit-length choices depend on encoding
+#    > Bit length choices depend on encoding
+#      > Refactor __chooser__
+#      * Populate __bit_length__
 #  * Update if statement in main script (`i)
 #  + Change "Generate the key" statement (`g)
 
@@ -131,20 +133,25 @@ EOF
 # Local functions
 
 #<functions>
-function __key_options__ {
-	# Set $_keytype to key type chosen from a numbered list
-	_chooser_array=(rsa dsa ecdsa ed25519)
+function __bit_length__ {
+	:
+	#TODO Set up __chooser__ here; refactor __chooser__ first
+}
+
+function __chooser__ {
 	_chooser_count="${#_chooser_array[@]}"
 	_chooser_array_keys=(${!_chooser_array[@]})
-	function __chooser_message__ {
+	function __chooser_list_ {
 		printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
 	}
 
+#TODO Refactor this to handle any $_chooser_count without if statement
 	if [[ "${_chooser_count}" -gt 1 ]]; then
 		for _key in "${_chooser_array_keys[@]}"; do
-			__chooser_message__
+			__chooser_list_
 		done | more
-		printf "Choose key type (enter number 1-"${_chooser_count}", default is "${_default_keytype}"): "
+		printf "%b\n" "${_chooser_message}"
+		printf "(enter number 1-"${_chooser_count}"): "
 		read _chooser_number
 		case "${_chooser_number}" in
 			''|*[!0-9]*) # not a number
@@ -156,10 +163,21 @@ function __key_options__ {
 				fi
 				;;
 		esac
+		#TODO Factor this out; call it _chooser_action or something
 		_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 	else
 		_keytype="$(printf "%b\n" "${_chooser_array}")"
 	fi
+} # end __chooser__
+
+function __key_options__ {
+	# Set $_keytype to key type chosen from a numbered list
+	_chooser_array=(rsa dsa ecdsa ed25519)
+	_chooser_message="Choose key type (default is "${_default_keytype}")"
+	__chooser__
+
+	# Set bit length
+	__bit_length__
 }
 
 function __local_cleanup__ {
