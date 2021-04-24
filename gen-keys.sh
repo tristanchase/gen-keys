@@ -4,12 +4,13 @@
 # Usage Section
 
 #<usage>
-#//Usage: gen-keys [ {-d|--debug} ] [ {-h|--help} ]
+#//Usage: gen-keys [ {-d|--debug} ] [ {-h|--help} {-t|--type} ]
 #//Description: Generates SSH keys for pairing local and remote hosts
-#//Examples: gen-keys; gen-keys --debug
+#//Examples: gen-keys; gen-keys --debug; gen-keys -t
 #//Options:
 #//	-d --debug	Enable debug mode
 #//	-h --help	Display this help message
+#//	-t --type	Choose type of key to create
 #</usage>
 
 #<created>
@@ -28,6 +29,16 @@
 
 #<todo>
 # TODO
+# * Give encoding options
+#  + Create option -t | --type
+#    + Update usage section (`u)
+#    + Update options section (`o)
+#  + Add if statement to main script
+#  > Create function
+#    + Choices: dsa | ecdsa | ed25519 (default)| rsa
+#    * Bit-length choices depend on encoding
+#  * Update if statement in main script (`i)
+#  + Change "Generate the key" statement (`g)
 
 # DONE
 
@@ -46,6 +57,9 @@
 #<main>
 # Initialize variables
 #_temp="file.$$"
+_default_keytype="ed25519"
+_keytype="${_default_keytype}"
+_keylength=""
 
 # List of temp files to clean up on exit (put last)
 #_tempfiles=("${_temp}")
@@ -69,8 +83,13 @@ function __main_script__ {
 	printf "Enter username on "${_remote_host}" (enter \"git\" on github or gitlab): "
 	read _user_name
 
+	# Offer different key types and bit lengths (optional)
+	if [[ "${_type_yN:-}" = "y" ]]; then
+		__key_options__
+	fi
+
 	# Generate the keys
-	ssh-keygen -t ed25519 -f "${_keyname}"
+	ssh-keygen ${_keylength:-} -t "${_keytype}" -f "${_keyname}"
 
 	# Create a known_hosts file for each key
 	touch known_hosts_"${_remote_host}"
@@ -112,6 +131,37 @@ EOF
 # Local functions
 
 #<functions>
+function __key_options__ {
+	# Set $_keytype to key type chosen from a numbered list
+	_chooser_array=(rsa dsa ecdsa ed25519)
+	_chooser_count="${#_chooser_array[@]}"
+	_chooser_array_keys=(${!_chooser_array[@]})
+	function __chooser_message__ {
+		printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
+	}
+
+	if [[ "${_chooser_count}" -gt 1 ]]; then
+		for _key in "${_chooser_array_keys[@]}"; do
+			__chooser_message__
+		done | more
+		printf "Choose key type (enter number 1-"${_chooser_count}", default is "${_default_keytype}"): "
+		read _chooser_number
+		case "${_chooser_number}" in
+			''|*[!0-9]*) # not a number
+				return
+				;;
+			*) # not in range
+				if [[ "${_chooser_number}" -lt 1 ]] || [[ "${_chooser_number}" -gt "${_chooser_count}" ]]; then
+					return
+				fi
+				;;
+		esac
+		_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
+	else
+		_keytype="$(printf "%b\n" "${_chooser_array}")"
+	fi
+}
+
 function __local_cleanup__ {
 	:
 }
@@ -138,6 +188,8 @@ if [[ "${1:-}" =~ (-d|--debug) ]]; then
 	__debugger__
 elif [[ "${1:-}" =~ (-h|--help) ]]; then
 	__usage__
+elif [[ "${1:-}" =~ (-t|--type) ]]; then
+	_type_yN="y"
 fi
 #</options>
 
