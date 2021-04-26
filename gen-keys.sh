@@ -29,20 +29,20 @@
 
 #<todo>
 # TODO
-# > Give encoding options
+
+# DONE
+# + Give encoding options
 #  + Create option -t | --type
 #    + Update usage section (`u)
 #    + Update options section (`o)
 #  + Add if statement to main script
-#  > Create function
+#  + Create function
 #    + Choices: dsa | ecdsa | ed25519 (default)| rsa
-#    > Bit length choices depend on encoding
-#      > Refactor __chooser__
-#      * Populate __bit_length__
-#  * Update if statement in main script (`i)
+#    + Bit length choices depend on encoding
+#      + Refactor __chooser__
+#      + Populate __bit_length__
+#  + Update if statement in main script (`i)
 #  + Change "Generate the key" statement (`g)
-
-# DONE
 
 #</todo>
 
@@ -61,7 +61,7 @@
 #_temp="file.$$"
 _default_keytype="ed25519"
 _keytype="${_default_keytype}"
-_keylength=""
+_keylength="" # Will equal "-b "${_bit_length}"" if set
 
 # List of temp files to clean up on exit (put last)
 #_tempfiles=("${_temp}")
@@ -134,18 +134,33 @@ EOF
 
 #<functions>
 function __bit_length__ {
-	:
-	#TODO Set up __chooser__ here; refactor __chooser__ first
+	# Set $_keylength to bit length, if desired
+	_rsa_opts=(1024 2048 4096)
+	_ecdsa_opts=(256 384 521)
+	if [[ "${_keytype}" =~ (rsa|ecdsa) ]]; then
+		printf "Set bit length? (y/N): "
+		read _response
+		if [[ "${_response}" =~ (y|Y) ]]; then
+			if [[ "${_keytype}" = "rsa" ]]; then
+				_chooser_array=("${_rsa_opts[@]}")
+			else
+				_chooser_array=("${_ecdsa_opts[@]}")
+			fi
+		fi
+		_chooser_message="Choose bit length (blank sets default): "
+		__chooser__
+		_keylength="-b $(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
+	fi
 }
 
 function __chooser__ {
+	# Set $_chooser_array and $_chooser_message before calling this function
 	_chooser_count="${#_chooser_array[@]}"
 	_chooser_array_keys=(${!_chooser_array[@]})
 	function __chooser_list_ {
 		printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
 	}
 
-#TODO Refactor this to handle any $_chooser_count without if statement
 	if [[ "${_chooser_count}" -gt 1 ]]; then
 		for _key in "${_chooser_array_keys[@]}"; do
 			__chooser_list_
@@ -163,10 +178,8 @@ function __chooser__ {
 				fi
 				;;
 		esac
-		#TODO Factor this out; call it _chooser_action or something
-		_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 	else
-		_keytype="$(printf "%b\n" "${_chooser_array}")"
+		_chooser_number="0"
 	fi
 } # end __chooser__
 
@@ -175,6 +188,7 @@ function __key_options__ {
 	_chooser_array=(rsa dsa ecdsa ed25519)
 	_chooser_message="Choose key type (default is "${_default_keytype}")"
 	__chooser__
+	_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 
 	# Set bit length
 	__bit_length__
