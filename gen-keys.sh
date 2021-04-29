@@ -29,14 +29,19 @@
 
 #<todo>
 # TODO
-#This Task will append the public key to a remote host, if possible, or at
-#least display it for copy/paste to a website (e.g. github.com)
-# + If shell available on remote host; then
-#    + Append public key to ~/.ssh/authorized_keys[2]
-#  + Else
-#    + Cat public key for copy/paste to website
 
 # DONE
+#This Task will append the public key to a remote host, if possible, or at
+#least display it for copy/paste to a website (e.g. github.com)
+#
+# This part added unnecessary complexity and caused the script to fail:
+# x If shell available on remote host; then
+#    x Append public key to ~/.ssh/authorized_keys[2]
+#  x Else
+#
+# This is much simpler and reduces errors
+# + Cat public key for copy/paste to website
+# + Cat command for copy/paste if shell is accessible
 
 #</todo>
 
@@ -113,14 +118,14 @@ EOF
 	# Add the key to ssh-agent
 	eval $(keychain --eval "${_keyname}")
 
-	# TODO This section will be fixed in Task: Handle public key transfer #6
 	# Append the public key to the remote host
-#	cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'
-#	if [[ "$?" != "0" ]]; then
-#		printf "%b\n" ""
-#		printf "%b\n" "Unable to log in to "${_remote_host}". Copy and paste the key below."
-#		cat ~/.ssh/id_ed25519.pub
-#	fi
+	printf "%b\n" "Copy/paste the key below to "${_remote_host}":"
+	printf "%b\n" ""
+	cat ~/.ssh/"${_keyname}".pub
+	printf "%b\n" ""
+	printf "%b\n" "Or use the command below if you can access a shell on "${_remote_host}":"
+	printf "%b\n" ""
+	printf "%b\n" "cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'"
 
 } #end __main_script__
 #</main>
