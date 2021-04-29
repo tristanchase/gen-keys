@@ -31,18 +31,17 @@
 # TODO
 
 # DONE
-# + Give encoding options
-#  + Create option -t | --type
-#    + Update usage section (`u)
-#    + Update options section (`o)
-#  + Add if statement to main script
-#  + Create function
-#    + Choices: dsa | ecdsa | ed25519 (default)| rsa
-#    + Bit length choices depend on encoding
-#      + Refactor __chooser__
-#      + Populate __bit_length__
-#  + Update if statement in main script (`i)
-#  + Change "Generate the key" statement (`g)
+#This Task will append the public key to a remote host, if possible, or at
+#least display it for copy/paste to a website (e.g. github.com)
+#
+# This part added unnecessary complexity and caused the script to fail:
+# x If shell available on remote host; then
+#    x Append public key to ~/.ssh/authorized_keys[2]
+#  x Else
+#
+# This is much simpler and reduces errors
+# + Cat public key for copy/paste to website
+# + Cat command for copy/paste if shell is accessible
 
 #</todo>
 
@@ -109,22 +108,24 @@ Host ${_remote_host}
  Hostname ${_remote_host}
  User ${_user_name}
  AddKeysToAgent yes
- UseKeychain yes
+# UseKeychain yes #(Mac OS only)
  IdentityFile ~/.ssh/${_keyname}
  UserKnownHostsFile ~/.ssh/known_hosts_${_remote_host}
  IdentitiesOnly yes
 
 EOF
 
-	# TODO This section will be fixed in Task: Handle public key transfer #6
-	# Append the public key to the remote host
-	#if [[ -z "${_user_name}" ]]; then
-		#exit 2
-	#fi
-	#cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'
-
 	# Add the key to ssh-agent
 	eval $(keychain --eval "${_keyname}")
+
+	# Append the public key to the remote host
+	printf "%b\n" "Copy/paste the key below to "${_remote_host}":"
+	printf "%b\n" ""
+	cat ~/.ssh/"${_keyname}".pub
+	printf "%b\n" ""
+	printf "%b\n" "Or use the command below if you can access a shell on "${_remote_host}":"
+	printf "%b\n" ""
+	printf "%b\n" "cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'"
 
 } #end __main_script__
 #</main>
