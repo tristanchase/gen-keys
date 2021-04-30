@@ -31,22 +31,6 @@
 # TODO
 
 # DONE
-# Task: Maintain list of keys
-
-# This Task will set up and maintain a list of keys with the intention of
-# passing the list to keychain when it is called in .bashrc. This will allow the
-# keys to be active in any new instance of a shell.
-
-# UPDATE: I decided to let .bashrc figure it out independently of this script.
-# This script will create a file called ~/.ssh/.keyfile which has the list of
-# keys. This will be useful for key maintainance in the future.
-
-# Additional changes to the script:
-
-# + Offer chance to enter email address or other comment
-
-# + Make Label for config file section automatically strip off any .suffix and
-# change the first character to uppercase
 
 #</todo>
 
