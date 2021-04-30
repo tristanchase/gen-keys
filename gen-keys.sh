@@ -31,17 +31,22 @@
 # TODO
 
 # DONE
-#This Task will append the public key to a remote host, if possible, or at
-#least display it for copy/paste to a website (e.g. github.com)
-#
-# This part added unnecessary complexity and caused the script to fail:
-# x If shell available on remote host; then
-#    x Append public key to ~/.ssh/authorized_keys[2]
-#  x Else
-#
-# This is much simpler and reduces errors
-# + Cat public key for copy/paste to website
-# + Cat command for copy/paste if shell is accessible
+# Task: Maintain list of keys
+
+# This Task will set up and maintain a list of keys with the intention of
+# passing the list to keychain when it is called in .bashrc. This will allow the
+# keys to be active in any new instance of a shell.
+
+# UPDATE: I decided to let .bashrc figure it out independently of this script.
+# This script will create a file called ~/.ssh/.keyfile which has the list of
+# keys. This will be useful for key maintainance in the future.
+
+# Additional changes to the script:
+
+# + Offer chance to enter email address or other comment
+
+# + Make Label for config file section automatically strip off any .suffix and
+# change the first character to uppercase
 
 #</todo>
 
@@ -58,9 +63,10 @@
 #<main>
 # Initialize variables
 #_temp="file.$$"
-_default_keytype="ed25519"
+_default_keytype="ed25519" # (rsa|dsa|ecdsa|ed25519)
 _keytype="${_default_keytype}"
 _keylength="" # Will equal "-b "${_bit_length}"" if set
+_keycomment="" # Will equal "-C "${_comment}" if set
 
 # List of temp files to clean up on exit (put last)
 #_tempfiles=("${_temp}")
@@ -84,13 +90,20 @@ function __main_script__ {
 	printf "Enter username on "${_remote_host}" (enter \"git\" on github or gitlab): "
 	read _user_name
 
+	# Get user comment (email address, maybe)
+	printf "Enter an optional comment, such as your email address (blank for default): "
+	read _comment
+	if [[ -n "${_comment}" ]]; then
+		_keycomment="-C "${_comment}""
+	fi
+
 	# Offer different key types and bit lengths (optional)
 	if [[ "${_type_yN:-}" = "y" ]]; then
 		__key_options__
 	fi
 
 	# Generate the keys
-	ssh-keygen ${_keylength:-} -t "${_keytype}" -f "${_keyname}"
+	ssh-keygen ${_keylength:-} -t "${_keytype}" -f "${_keyname}" ${_keycomment:-}
 
 	# Create a known_hosts file for each key
 	touch known_hosts_"${_remote_host}"
@@ -98,9 +111,9 @@ function __main_script__ {
 	# Create/update config file
 	touch config
 
-	# Get Label
-	printf "Enter a Label for this config entry (Host without .com): "
-	read _label
+	# Get Label for config file section
+	_label=${_remote_host%.*} # Strips off .suffix, if there is one
+	_label=${_label^} # Changes first character to uppercase
 
 	cat >> config << EOF
 # ${_label}
@@ -112,12 +125,17 @@ Host ${_remote_host}
  IdentityFile ~/.ssh/${_keyname}
  UserKnownHostsFile ~/.ssh/known_hosts_${_remote_host}
  IdentitiesOnly yes
+# End ${_label}
 
 EOF
+
+	# Update ~/.ssh/.keyfile
+	printf "%b\n" ~/.ssh/* | grep -Ev 'pub|config|known_hosts' | xargs basename -a > ~/.ssh/.keyfile
 
 	# Add the key to ssh-agent
 	eval $(keychain --eval "${_keyname}")
 
+	# TODO Make this an option for retrieving later
 	# Append the public key to the remote host
 	printf "%b\n" "Copy/paste the key below to "${_remote_host}":"
 	printf "%b\n" ""
@@ -126,6 +144,8 @@ EOF
 	printf "%b\n" "Or use the command below if you can access a shell on "${_remote_host}":"
 	printf "%b\n" ""
 	printf "%b\n" "cat ~/.ssh/"${_keyname}".pub | ssh "${_user_name}"@"${_remote_host}" 'cat >> ~/.ssh/authorized_keys2'"
+
+	# TODO Make option to delete everything related to _keyname
 
 } #end __main_script__
 #</main>
