@@ -1,7 +1,7 @@
---------
+---
 name: Bug report
 about: Create a report to help us improve
---------
+---
 
 <!-- Please search existing issues to avoid creating duplicates. -->
 
@@ -22,7 +22,7 @@ Info about the bug goes here.
 
 The expected result was...
 
-You may write the expected result o screenshot.
+You may write the expected result or add a screenshot.
 
 ### Actual Results
 
