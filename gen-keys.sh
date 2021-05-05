@@ -113,8 +113,8 @@ Host ${_remote_host}
 
 EOF
 
-	# Update ~/.ssh/.keyfile
-	printf "%b\n" ~/.ssh/* | grep -Ev 'pub|config|known_hosts' | xargs basename -a > ~/.ssh/.keyfile
+	# Update ~/.ssh/.keyfile (exclude pub|config|known_hosts|authorized_key)
+	printf "%b\n" ~/.ssh/* | grep -Ev 'pub|config|known_hosts|authorized_key' | xargs basename -a > ~/.ssh/.keyfile
 
 	# Add the key to ssh-agent
 	eval $(keychain --eval "${_keyname}")
