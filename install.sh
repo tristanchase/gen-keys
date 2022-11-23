@@ -15,7 +15,7 @@ start_dir="$(pwd)"
 ## Dependencies
 
 ### System
-sys_deps="ssh-keygen keychain"
+sys_deps="keychain"
 
 ### gen-keys-specific
 script_deps="gen-keys"
