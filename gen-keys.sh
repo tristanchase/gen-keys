@@ -209,7 +209,7 @@ for _helper_file in functions colors git-prompt; do
 	if [[ ! -e ${HOME}/."${_helper_file}".sh ]]; then
 		printf "%b\n" "Downloading missing script file "${_helper_file}".sh..."
 		sleep 1
-		wget -nv -P ${HOME} https://raw.githubusercontent.com/tristanchase/dotfiles/master/"${_helper_file}".sh
+		wget -nv -P ${HOME} https://raw.githubusercontent.com/tristanchase/dotfiles/main/"${_helper_file}".sh
 		mv ${HOME}/"${_helper_file}".sh ${HOME}/."${_helper_file}".sh
 	fi
 done
