@@ -15,7 +15,7 @@ start_dir="$(pwd)"
 ## Dependencies
 
 ### System
-sys_deps="keychain"
+sys_deps="openssh keychain"
 
 ### gen-keys-specific
 script_deps="gen-keys"
