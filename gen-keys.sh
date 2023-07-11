@@ -20,6 +20,7 @@
 
 #<depends>
 # Depends on:
+#  openssh
 #  keychain
 #</depends>
 
