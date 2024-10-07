@@ -162,14 +162,14 @@ function __chooser__ {
 	# Set $_chooser_array and $_chooser_message before calling this function
 	_chooser_count="${#_chooser_array[@]}"
 	_chooser_array_keys=(${!_chooser_array[@]})
-	function __chooser_list_ {
+	function __chooser_list__ {
 		printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
 	}
 
 	if [[ "${_chooser_count}" -gt 1 ]]; then
 		for _key in "${_chooser_array_keys[@]}"; do
-			__chooser_list_
-		done | more
+			__chooser_list__
+		done | more -e
 		printf "%b\n" "${_chooser_message}"
 		printf "(enter number 1-"${_chooser_count}"): "
 		read _chooser_number
