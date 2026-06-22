@@ -154,7 +154,8 @@ function __bit_length__ {
 		fi
 		_chooser_message="Choose bit length (blank sets default): "
 		__chooser__
-		_keylength="-b $(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
+		_keylength="-b ""${_chosen_item}"
+		#_keylength="-b $(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 	fi
 }
 
@@ -162,30 +163,23 @@ function __chooser__ {
 	# Set $_chooser_array and $_chooser_message before calling this function
 	_chooser_count="${#_chooser_array[@]}"
 	_chooser_array_keys=(${!_chooser_array[@]})
-	function __chooser_list__ {
-		printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
-	}
-
 	if [[ "${_chooser_count}" -gt 1 ]]; then
 		for _key in "${_chooser_array_keys[@]}"; do
-			__chooser_list__
+			printf "%q %q\n" $((_key + 1)) "${_chooser_array[$_key]}"
 		done | more -e
-		printf "%b\n" "${_chooser_message}"
-		printf "(enter number 1-"${_chooser_count}"): "
+		printf "%b" "${_chooser_message}"
+		printf " (enter number 1-"${_chooser_count}"): "
 		read _chooser_number
 		case "${_chooser_number}" in
-			''|*[!0-9]*) # not a number
-				return
-				;;
-			*) # not in range
-				if [[ "${_chooser_number}" -lt 1 ]] || [[ "${_chooser_number}" -gt "${_chooser_count}" ]]; then
-					return
-				fi
-				;;
+			(''|*[!0-9]*)	 return 3 ;; # not a number
+			(*) 		if [[ "${_chooser_number}" -lt 1 ]] || [[ "${_chooser_number}" -gt "${_chooser_count}" ]]; then
+				return 4
+				fi ;; # not in range
 		esac
 	else
 		_chooser_number="0"
 	fi
+	_chosen_item="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 } # end __chooser__
 
 function __key_options__ {
@@ -193,7 +187,8 @@ function __key_options__ {
 	_chooser_array=(rsa dsa ecdsa ed25519)
 	_chooser_message="Choose key type (default is "${_default_keytype}")"
 	__chooser__
-	_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
+	_keytype="${_chosen_item}"
+	#_keytype="$(printf "%b\n" "${_chooser_array[@]:$_chooser_number-1:1}")"
 
 	# Set bit length
 	__bit_length__
