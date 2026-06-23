@@ -105,7 +105,7 @@ Host ${_remote_host}
  Hostname ${_remote_host}
  User ${_user_name}
  AddKeysToAgent yes
-# UseKeychain yes #(Mac OS only)
+# UseKeychain yes #(MacOS only)
  IdentityFile ~/.ssh/${_keyname}
  UserKnownHostsFile ~/.ssh/known_hosts_${_remote_host}
  IdentitiesOnly yes
